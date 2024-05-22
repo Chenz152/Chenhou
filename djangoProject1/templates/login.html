@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>登陆</title>
+    <link href="https://cdn.bootcss.com/element-ui/2.11.1/theme-chalk/index.css" rel="stylesheet">
+    <script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://cdn.bootcss.com/vue/2.6.10/vue.min.js"></script>
+    <script src="https://cdn.bootcss.com/element-ui/2.11.1/index.js"></script>
+    <script src="https://cdn.bootcss.com/decimal.js/10.2.0/decimal.min.js"></script>
+</head>
+<style>
+        body {
+            background-color: #f4efef;
+        }
+    [v-cloak] {
+        display: none;
+    }
+    .login {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        background-size: cover;
+    }
+    .title {
+        margin: 0px auto 30px auto;
+        text-align: center;
+        color: #2a0000;
+    }
+    .color{
+        color:#2a0000;
+        font-weight: bold;
+    }
+    .color-button {
+
+        font-weight: bold
+    }
+
+    .login-form {
+        border-radius: 6px;
+        background: #ffffff;
+        width: 400px;
+        padding: 25px 25px 5px 25px;
+        margin-top: 15%;
+    }
+    .login-form .el-input{
+        height: 38px;
+    }
+    .login-form .el-input input{
+        height: 38px;
+    }
+    .input-icon {
+        height: 39px;
+        width: 14px;
+        margin-left: 2px;
+    }
+    .login-tip {
+        font-size: 13px;
+        text-align: center;
+        color: #bfbfbf;
+    }
+    .login-code {
+        width: 33%;
+        height: 38px;
+        float: right;
+    }
+    .login-code img {
+        cursor: pointer;
+        vertical-align: middle;
+    }
+    .el-login-footer {
+        height: 40px;
+        line-height: 40px;
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        text-align: center;
+        color: #fff;
+        font-family: Arial;
+        font-size: 12px;
+        letter-spacing: 1px;
+    }
+    .login-code-img {
+        height: 38px;
+    }
+
+
+</style>
+
+<body >
+    <div id="app" v-cloak>
+        <template>
+            <div class="login">
+                <el-form ref="loginForm"  class="login-form">
+                    <h3 class="title">登录</h3>
+                    <el-form-item prop="username">
+                        <el-input class="color"
+                                v-model="username"
+                                type="text"
+                                auto-complete="off"
+                                placeholder="请输入账号"
+                        >
+                            <svg-icon slot="prefix" icon-class="user" class="el-input__icon input-icon" />
+                        </el-input>
+                    </el-form-item>
+                    <el-form-item prop="password">
+                        <el-input
+                                v-model="password"
+                                type="password"
+                                auto-complete="off"
+                                placeholder="请输入密码"
+                        >
+                            <svg-icon slot="prefix" icon-class="password" class="el-input__icon input-icon" />
+                        </el-input>
+                    </el-form-item>
+                    <el-form-item prop="code" >
+                        <el-input
+                                v-model="kaptcha"
+                                auto-complete="off"
+                                placeholder="验证码"
+                                style="width: 63%"
+                        >
+                            <svg-icon slot="prefix" icon-class="validCode" class="el-input__icon input-icon" />
+                        </el-input>
+                        <div class="login-code">
+                            <canvas ref="canvas" width="120" height="40" @click="reset"></canvas>
+                        </div>
+                    </el-form-item>
+                    <el-form-item style="width:100%;">
+                        <el-button
+                             class="color-button"
+                                size="medium"
+                                type="primary"
+                                style="width:58%;"
+                                @click="login"
+                        >
+                            登录
+                        </el-button>
+                        <el-button
+                                size="medium"
+                                class="color"
+                                style="width:38%;"
+                                @click="showUserTable"
+                        >
+                            注册
+                        </el-button>
+
+                    </el-form-item>
+                </el-form>
+            </div>
+        </template>
+        <el-dialog class="color" title="注册" :visible.sync="dialogFormVisible" class="color" >
+            <template slot-scope="scope" #title>
+                <span style="color:#2a0000" >
+                注册
+                </span>
+            </template>
+            <el-form :model="user">
+                <el-form-item  label="用户名" label-width="80px">
+                    <template slot-scope="scope" #label>
+                        <span style="color:#2a0000" >
+                        用户名
+                        </span>
+                    </template>
+                    <el-input  placeholder="4到16位字母，数字，下划线，减号" v-model="user.username" autocomplete="off"></el-input>
+                </el-form-item>
+                <el-form-item class="color" label="密码" label-width="80px">
+                    <template slot-scope="scope" #label>
+                        <span style="color: #2a0000" >
+                        密码
+                        </span>
+                    </template>
+                    <el-input  placeholder="包括至少1个大写字母，1个小写字母，1个数字，1个特殊字符 " show-password v-model="user.password" autocomplete="off"></el-input>
+                </el-form-item>
+                <el-form-item class="color" label="密码" label-width="80px">
+                    <template slot-scope="scope" #label>
+                        <span style="color: #2a0000" >
+                        二次密码
+                        </span>
+                    </template>
+                    <el-input  placeholder="请再次输入密码" show-password v-model="user.sec_password" autocomplete="off"></el-input>
+                </el-form-item>
+
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+                <el-button class="color" icon="el-icon-back" @click="dialogFormVisible = false">取 消</el-button>
+                <el-button class="color-button" type="primary" @click="createUser">注 册</el-button>
+            </div>
+        </el-dialog>
+
+    </div>
+</body>
+<script>
+    var app = new Vue({
+        el: '#app',
+        data: {
+            time: 60,
+            isDisabled: false,
+            buttonName: "发送邮件",
+            activeName: "first",
+            userPattern: /^[a-zA-Z0-9_-]{4,16}$/,
+            passwordPattern: /^.*(?=.{6,})(?=.*\d)(?=.*[A-Z])(?=.*[a-z])(?=.*[!@#$%^&*? ]).*$/,
+            emailPattern: /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/,
+            phonePattern: /^((13[0-9])|(14[5|7])|(15([0-3]|[5-9]))|(18[0,5-9]))\d{8}$/,
+            dialogFormVisible: false,
+            username: "",
+            show_code: false,
+            password: "",
+            kaptcha: "",
+            imgvalue: "/captcha.jpg?id=" + Math.random(),
+            telephone: "",
+            code: "",
+            num:"",
+            user: {
+                username: "",
+                password: "",
+                sec_password: "",
+            },
+        },
+        mounted(){this.draw()},
+        methods: {
+            sendSmsCode: function () {
+
+                $.ajax({
+                    url: "/sms-code",
+                    type: "get",
+                    data: { telephone: app.telephone },
+                    xhrFields: {
+            withCredentials: true
+        },
+
+                    success: function (req) {
+                        if (req.code == 200) {
+                            app.$message.success(req.msg);
+                            app.isDisabled = true;
+                            var interval = window.setInterval(function () {
+                                app.buttonName = '（' + app.time + '秒）后重新发送';
+                                --app.time;
+                                if (app.time < 0) {
+                                    app.buttonName = "重新发送";
+                                    app.time = 60;
+                                    app.isDisabled = false;
+                                    window.clearInterval(interval);
+                                }
+                            }, 1000);
+                        } else {
+                            app.$message.error(req.msg);
+                        }
+                    }
+                })
+            },
+            telephoneLogin: function () {
+                $.ajax({
+                    url: "/login-by-sms",
+                    type: "post",
+                    data: {
+                        telephone: app.telephone, code: app.code
+                    },
+                    xhrFields: {
+            withCredentials: true
+        },
+
+                    success: function (req) {
+                        if (req.code == 200) {
+                            window.location.href = "../";
+                        } else {
+                            app.$message.error(req.msg);
+                        }
+                    }
+                })
+            },
+            refreshImage: function () {
+                this.imgvalue = "/captcha.jpg?id=" + Math.random();
+            },
+            showUserTable: function () {
+                this.user = {
+                    username: "",
+                    password: "",
+                    telephone: "",
+                    email: "",
+                    emailCode: "",
+                };
+                this.dialogFormVisible = true;
+            },
+            createUser: function () {
+                if (!this.userPattern.test(app.user.username)) {
+                    app.$message.error('用户名4到16位（字母，数字，下划线，减号）');
+                    return;
+                }
+
+                if(app.user.password != app.user.sec_password){
+                    app.$message.error("两次输入的密码不一致")
+                    return;
+                }
+
+                $.ajax({
+                    url: "/register/",
+                    type: "post",
+                    data: {
+                        username: app.user.username,
+                        password: app.user.password,
+                    },
+                    xhrFields: {
+            withCredentials: true
+        },
+
+                    success: function (req) {
+                        if (req.msg) {
+                            app.$message.success(req.msg);
+                            app.dialogFormVisible = false;
+                            app.username = app.user.username;
+                        } else {
+                            app.$message.error(req.err);
+                        }
+                    }
+                })
+            },
+            draw: function (){
+                var canvas = this.$refs.canvas;//演员
+                var context = canvas.getContext("2d");//舞台，getContext() 方法可返回一个对象，该对象提供了用于在画布上绘图的方法和属性。
+
+    var input = document.getElementById("text");//获取输入框
+                context.strokeRect(0, 0, 120, 40);//绘制矩形（无填充）
+        var aCode = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"];
+        // 绘制字母
+        var arr = [] //定义一个数组用来接收产生的随机数
+        var num //定义容器接收验证码
+        for (var i = 0; i < 4; i++) {
+            var x = 20 + i * 20;//每个字母之间间隔20
+            var y = 20 + 10 * Math.random();//y轴方向位置为20-30随机
+            var index = Math.floor(Math.random() * aCode.length);//随机索引值
+            var txt = aCode[index];
+            context.font = "bold 20px 微软雅黑";//设置或返回文本内容的当前字体属性
+            context.fillStyle=this.getColor();//设置或返回用于填充绘画的颜色、渐变或模式，随机
+            context.translate(x,y);//重新映射画布上的 (0,0) 位置，字母不可以旋转移动，所以移动容器
+            var deg=90*Math.random()*Math.PI/180;//0-90度随机旋转
+            context.rotate(deg);// 	旋转当前绘图
+            context.fillText(txt, 0, 0);//在画布上绘制“被填充的”文本
+            context.rotate(-deg);//将画布旋转回初始状态
+            context.translate(-x,-y);//将画布移动回初始状态
+            arr[i] = txt //接收产生的随机数
+        }
+        this.num = arr[0] + arr[1] + arr[2] + arr[3] //将产生的验证码放入num
+        // 绘制干扰线条
+        for (var i = 0; i < 8; i++) {
+            context.beginPath();//起始一条路径，或重置当前路径
+            context.moveTo(Math.random() * 120, Math.random() * 40);//把路径移动到画布中的随机点，不创建线条
+            context.lineTo(Math.random() * 120, Math.random() * 40);//添加一个新点，然后在画布中创建从该点到最后指定点的线条
+            context.strokeStyle=this.getColor();//随机线条颜色
+            context.stroke();// 	绘制已定义的路径
+        }
+        // 绘制干扰点，和上述步骤一样，此处用长度为1的线代替点
+        for (var i = 0; i < 20; i++) {
+            context.beginPath();
+            var x = Math.random() * 120;
+            var y = Math.random() * 40;
+            context.moveTo(x, y);
+            context.lineTo(x + 1, y + 1);
+            context.strokeStyle=this.getColor();
+            context.stroke();
+        }
+            },
+            getColor: function (){
+                var r = Math.floor(Math.random() * 256);
+        var g = Math.floor(Math.random() * 256);
+        var b = Math.floor(Math.random() * 256);
+        return "rgb(" + r + "," + g + "," + b + ")";
+            },
+            SenderEmail:function(){
+                console.log(this.$refs)
+                $.ajax({
+                    url: "/email",
+                    type: "post",
+                    data: {email: this.user.email},
+                    success: function(res){
+                        if(res.msg == true){
+                            document.getElementById("code").style.display = "block"
+                            app.$message.success("发送成功");
+                        }else{
+                            app.$message.error(res.err? res.err: "发送失败");
+                        }
+                    }
+                })
+            },
+            reset: function (){
+                var canvas = this.$refs.canvas;
+                var context = canvas.getContext("2d");
+                context.clearRect(0, 0, 120, 40);//在给定的矩形内清除指定的像素
+                this.draw();
+            },
+            login: function () {
+                {#if (!this.userPattern.test(app.username)) {#}
+                {#    app.$message.error('用户名4到16位（字母，数字，下划线，减号）');#}
+                {#    return;#}
+                {#}#}
+                {##}
+                {#    if (this.kaptcha !== this.num) {#}
+                {#        app.$message.error('验证码错误！');#}
+                {#        return;#}
+                {#    }#}
+                $.ajax({
+                    url: "/login/",
+                    type: "post",
+                    data: { username: app.username, password: app.password},
+                    success: function (req) {
+                        console.log(req)
+                        if (req.msg) {
+                            app.$message.success(req.msg);
+                            window.location.href = '/'
+                        } else {
+                            app.$message.error(req.err);
+                        }
+                    }
+                })
+            },
+        }
+    })
+</script>
+
+</html>

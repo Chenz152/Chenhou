@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>首页</title>
+    <link href="https://cdn.bootcss.com/element-ui/2.11.1/theme-chalk/index.css" rel="stylesheet">
+    <script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://cdn.bootcss.com/vue/2.6.10/vue.min.js"></script>
+    <script src="https://cdn.bootcss.com/element-ui/2.11.1/index.js"></script>
+    <script src="https://cdn.bootcss.com/decimal.js/10.2.0/decimal.min.js"></script>
+
+</head>
+<body>
+<div id="app" style="height: 100%; position: relative" >
+    {% if user.is_superuser %}
+        <el-button type="primary" style="position: fixed; right: 20px; top: 20px" onclick="window.location.href = '/admin'">前往上传</el-button>
+    {% endif %}
+<div style="display: flex; height: 100%; align-items: center;flex-direction: column; margin: auto; width: 80%; padding: 30px 0px;box-sizing: border-box;">
+    <el-image :src="preview_src" style="height: 400px; width: 450px; overflow: visible">
+
+    </el-image>
+    <div>
+        <span>[[ filename ]]</span>
+    </div>
+    <div>
+        <el-button @click="getpicture" type="primary">换一批</el-button>
+    </div>
+    <div style="margin-top: 50px; display: flex; align-items: center">
+        <div style="margin-right: 15px; cursor: pointer; height: 100%; display: flex; align-items: center" @click="change(index-1)">
+            <i class="el-icon-caret-left" ></i>
+        </div>
+        <div v-for="(i, index) in images_info" :key="index" class="image-list" >
+            <el-image @click="change(index)" :src="images_info[index].url" style="width: 80px; height: 80px"></el-image>
+        </div>
+        <div style="margin-left: 15px; cursor: pointer; height: 100%; display: flex; align-items: center" @click="change(index+1)"><i class="el-icon-caret-right"></i></div>
+
+    </div>
+
+    <div style="margin-top: 50px; width: 500px; display: flex">
+        <el-avatar style="margin-right: 15px" id="username"> {{ user.username }} </el-avatar>
+        <el-input
+          type="textarea"
+          :autosize="{ minRows: 4, maxRows: 6}"
+          placeholder="请输入内容"
+          style="flex: 1"
+          v-model="content">
+        </el-input>
+        <el-button @click="submit(index)">评论</el-button>
+    </div>
+    <div style="width: 500px; margin-top: 50px; margin-bottom: 20px">
+        <span style="font-weight: bold">所有评论</span>
+    </div>
+    <div>
+        <div v-if="images_info[index].comments" v-for="i in images_info[index].comments" style="margin-bottom: 25px;width: 500px; display: flex">
+            <el-avatar style="margin-right: 15px; width: 40px; height: 40px"> [[ i.user ]] </el-avatar>
+            <el-card class="box-card" style="    flex: 1;">[[ i.content ]]</el-card>
+        </div>
+    </div>
+</div>
+</div>
+<script>
+     var app = new Vue({
+         delimiters:['[[', ']]'],
+         el: '#app',
+         data:{
+             preview_src : "",
+             images_info: [],
+             index: 0,
+             content: "",
+             filename: ""
+         },
+         mounted(){
+            this.getpicture()
+         },
+         methods:{
+             getpicture:function (){
+                 this.images_info = [];
+                 this.index = 0
+                 this.filename = ""
+                 $.ajax({
+                         url: "/picture/",
+                         type: "GET",
+                         success: function(res){
+                             for(var i in res.data){
+                                 app.images_info.push(res.data[i])
+                             }
+                             app.preview_src = app.images_info[0].url
+                             app.filename = app.images_info[0].filename
+                         }
+                     })
+             },
+             submit: function (index){
+                 $.ajax({
+                 url: "/comment/",
+                 data: {content: app.content, picture: app.images_info[app.index].id},
+                 type: "POST",
+                 success: function(res){
+                     if(res.msg){
+                         app.$message.success(res.msg)
+                         app.images_info[index].comments.push({
+                             user: document.getElementById('username').innerText,
+                             content: app.content
+                         })
+                     }else{
+                         app.$message.error(res.err)
+                     }
+                 }
+             })
+             },
+             change:function (index){
+                 if(index < 0 || index > (app.images_info.length - 1)){
+                     app.$message.error("已经到底了！")
+                    return
+                 }
+                 app.index = index;
+                app.preview_src = app.images_info[index].url
+                 app.filename = app.images_info[index].filename
+             }
+         }
+     })
+</script>
+<style>
+    html, body{
+        margin: 0px;
+        padding: 0px;
+        height: 100%;
+    }
+    .image-list:nth-child(n){
+        margin:0px 5px;
+    }
+
+</style>
+</body>

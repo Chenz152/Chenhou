@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>首页</title>
+    <link href="https://cdn.bootcss.com/element-ui/2.11.1/theme-chalk/index.css" rel="stylesheet">
+    <script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://cdn.bootcss.com/vue/2.6.10/vue.min.js"></script>
+    <script src="https://cdn.bootcss.com/element-ui/2.11.1/index.js"></script>
+    <script src="https://cdn.bootcss.com/decimal.js/10.2.0/decimal.min.js"></script>
+
+</head>
+<body>
+<div id="app" style="height: 100%;display: flex;
+    justify-content: center;
+    align-items: center;" >
+<el-upload
+  class="upload-demo"
+  drag
+
+  action="/picture/"
+  method="POST"
+  :on-success="success"
+  :on-error="failed"
+  multiple>
+  <i class="el-icon-upload"></i>
+  <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+  <div class="el-upload__tip" slot="tip">只能上传jpg/png文件，且不超过500kb</div>
+</el-upload>
+</div>
+<script>
+     var app = new Vue({
+
+         el: '#app',
+         data:{
+             fileList : "",
+             images_info: [],
+             dialogVisible: false,
+             dialogImageUrl: ""
+         },
+         methods:{
+             success: function(response, file, fileList){
+                 if(response.msg){
+                     app.$message.success(response.msg)
+                 }
+             },
+             failed: function (response){
+                 if(response.err){
+                     app.$message.success(response.err)
+                 }
+             }
+         }
+     })
+</script>
+<style>
+    html, body{
+        margin: 0px;
+        padding: 0px;
+        height: 100%;
+    }
+</style>
+</body>
